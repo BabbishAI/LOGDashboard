@@ -67,6 +67,7 @@
     .row .n { color:var(--muted); width:52px; flex:none; font-variant-numeric:tabular-nums; }
     .row .tbd { color:var(--lottery); font-style:italic; }
     .via { color:var(--accent); font-size:11px; font-weight:600; }
+    .est { color:var(--lottery); font-size:10px; font-weight:700; text-transform:uppercase; font-style:italic; }
     .note { color:var(--muted); font-size:12px; margin-top:8px; }
     footer { color:var(--muted); font-size:12px; text-align:center; padding:20px; }
   </style>
@@ -194,6 +195,19 @@
       return slots.concat(TOP);
     }
 
+    // FULL-BOARD version: when no result yet, fill picks 1-6 with lottery ESTIMATES
+    // (most cups -> earliest pick), flagged as estimates. The order table above is unaffected.
+    function estOrder(){ return POOL.slice().sort(function(a,b){ return b.cups - a.cups; }); }
+    function boardSlots(){
+      var res = getResult(), slots = [];
+      for (var p=1; p<=6; p++){
+        if (res){ var t = poolBySeed[res.seeds[p-1]]; slots.push({ pick:p, team:t.team, manager:t.manager, seed:t.seed, est:false }); }
+        else { var e = estOrder()[p-1]; slots.push({ pick:p, team:e.team, manager:e.manager, seed:e.seed, est:true }); }
+      }
+      TOP.forEach(function(s){ slots.push({ pick:s.pick, team:s.team, manager:s.manager, seed:s.seed, est:false }); });
+      return slots;
+    }
+
     function setStatus(){
       var res = getResult(), el = document.getElementById('status');
       if (!res){ el.className='badge b-pending'; el.textContent='lottery pending'; }
@@ -222,11 +236,12 @@
     function slotLabel(slot, r){
       if (slot.lottery) return '<span class="tbd">Lottery pick '+slot.pick+'</span>';
       var to = TRADES[slot.team] && TRADES[slot.team][r];
-      if (to) return esc(to)+' <span class="via">via '+esc(slot.team)+'</span>';
-      return esc(slot.team)+' <span class="mgr">'+esc(slot.manager)+'</span>';
+      var estTag = slot.est ? ' <span class="est">est</span>' : '';
+      if (to) return esc(to)+' <span class="via">via '+esc(slot.team)+'</span>'+estTag;
+      return esc(slot.team)+' <span class="mgr">'+esc(slot.manager)+'</span>'+estTag;
     }
     function renderBoard(){
-      var base = round1(), html='';
+      var base = boardSlots(), html='', locked = !!getResult();
       for (var r=1; r<=ROUNDS; r++){
         var slots = (r%2===1) ? base.slice() : base.slice().reverse();
         html += '<div class="rnd"><h3>Round '+r+'</h3><div class="rows">';
@@ -236,7 +251,10 @@
       document.getElementById('board').innerHTML = html;
       document.getElementById('roundsNote').innerHTML =
         'Full board shown for <b>'+ROUNDS+'</b> rounds (placeholder — confirm your exact draft length). '+
-        '“<span class="via">via [team]</span>” = pick acquired by trade. Trades involving <b>lottery teams</b> appear once the lottery is locked; lottery picks fill once results are entered.';
+        '“<span class="via">via [team]</span>” = pick acquired by trade. ' +
+        (locked
+          ? 'Picks 1–6 reflect the <b>locked</b> lottery result.'
+          : 'Picks 1–6 are <b>estimates</b> from the lottery odds (most cups → earliest pick), marked <span class="est">est</span>, until the lottery is locked.');
     }
 
     // ---- entry tool ----
