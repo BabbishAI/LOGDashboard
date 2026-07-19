@@ -23,6 +23,9 @@
     th, td { text-align:left; padding:9px 12px; font-size:14px; border-top:1px solid var(--line); }
     th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
     td.pick, th.pick { text-align:center; width:52px; font-weight:700; }
+    td.num, th.num { text-align:center; white-space:nowrap; }
+    td.odds { color:var(--top); font-weight:700; }
+    .poolbox table { margin-top:10px; }
     .mgr { color:var(--muted); font-size:12px; }
     .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; }
     .p-lottery { background:rgba(234,179,8,.16); color:var(--lottery); }
@@ -69,8 +72,8 @@
 
     <h2>Lottery pool — picks 1–6 (TBD)</h2>
     <div class="poolbox">
-      <div class="pt">These six teams draw for the top six picks. Order set once the lottery is run.</div>
-      <div class="pool" id="pool"></div>
+      <div class="pt">Each team gets cups based on finish — <b>7th place 6 cups</b>, down to <b>12th place 1 cup</b> (21 total). Cups are drawn to set picks 1–6; odds shown are the chance at the #1 pick.</div>
+      <div id="pool"></div>
     </div>
 
     <button class="toggle" id="toggle" onclick="toggleBoard()">▼ Show full draft board (all rounds)</button>
@@ -94,13 +97,14 @@
       { pick: 11, team: 'Ръцете ми са направени от гран', manager: 'A.K. 47',            seed: 2 },
       { pick: 12, team: 'The Catwalk Models',            manager: 'ChuckoCommissioner', seed: 1 }
     ];
+    // cups by finish: 7th place 6 cups, down to 12th place 1 cup (21 total)
     var POOL = [
-      { team: 'Cromarties Daycare',  manager: 'Chris Giorgio', seed: 7 },
-      { team: 'B+ Beard of Pubes',   manager: 'Marc',          seed: 8 },
-      { team: 'John Napier',         manager: 'Sterdaddy',     seed: 9 },
-      { team: 'Cowboy Collars',      manager: 'Graham',        seed: 10 },
-      { team: 'Dirty little Coch',   manager: 'Andy',          seed: 11 },
-      { team: 'Sexy Upside',         manager: 'perry crowell', seed: 12 }
+      { team: 'Cromarties Daycare',  manager: 'Chris Giorgio', seed: 7,  cups: 6 },
+      { team: 'B+ Beard of Pubes',   manager: 'Marc',          seed: 8,  cups: 5 },
+      { team: 'John Napier',         manager: 'Sterdaddy',     seed: 9,  cups: 4 },
+      { team: 'Cowboy Collars',      manager: 'Graham',        seed: 10, cups: 3 },
+      { team: 'Dirty little Coch',   manager: 'Andy',          seed: 11, cups: 2 },
+      { team: 'Sexy Upside',         manager: 'perry crowell', seed: 12, cups: 1 }
     ];
 
     function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
@@ -118,9 +122,17 @@
                '<td>'+esc(s.team)+' <span class="mgr">'+esc(s.manager)+'</span></td>'+
                '<td class="'+(champ?'champ':'')+'">'+(champ?'🏆 ':'')+'finished '+ord(s.seed)+'</td></tr>';
       }).join('');
-      document.getElementById('pool').innerHTML = POOL.map(function(t){
-        return '<span class="chip">'+esc(t.team)+' <small>'+esc(t.manager)+' · '+ord(t.seed)+'</small></span>';
+      var total = POOL.reduce(function(s,t){ return s + t.cups; }, 0);
+      var rows = POOL.slice().sort(function(a,b){ return b.cups - a.cups; }).map(function(t){
+        var odds = (t.cups / total * 100).toFixed(1);
+        return '<tr><td>'+esc(t.team)+' <span class="mgr">'+esc(t.manager)+'</span></td>'+
+               '<td class="num">'+ord(t.seed)+'</td>'+
+               '<td class="num">'+t.cups+'</td>'+
+               '<td class="num odds">'+odds+'%</td></tr>';
       }).join('');
+      document.getElementById('pool').innerHTML =
+        '<table><thead><tr><th>Team</th><th class="num">Finish</th><th class="num">Cups</th><th class="num">#1 pick</th></tr></thead><tbody>'+
+        rows+'<tr><td class="mgr">Total</td><td></td><td class="num mgr">'+total+'</td><td></td></tr></tbody></table>';
     }
 
     function label(slot){
