@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Draft Order — League of Gods</title>
+  <style>
+    :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --text:#e2e8f0; --muted:#94a3b8;
+            --accent:#38bdf8; --lottery:#eab308; --top:#22c55e; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+           background:var(--bg); color:var(--text); }
+    .back { padding:12px 16px 0; }
+    .back a { color:var(--accent); font-size:14px; text-decoration:none; font-weight:600; }
+    header { padding:16px 16px 8px; }
+    h1 { margin:0 0 4px; font-size:22px; }
+    .sub { color:var(--muted); font-size:13px; }
+    .rule { margin:10px 0 0; font-size:12px; color:var(--muted); line-height:1.5; }
+    .wrap { padding:12px 16px 48px; max-width:760px; margin:0 auto; }
+    h2 { font-size:16px; margin:22px 0 8px; }
+    table { width:100%; border-collapse:collapse; background:var(--card);
+            border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+    th, td { text-align:left; padding:9px 12px; font-size:14px; border-top:1px solid var(--line); }
+    th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+    td.pick, th.pick { text-align:center; width:52px; font-weight:700; }
+    .mgr { color:var(--muted); font-size:12px; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; }
+    .p-lottery { background:rgba(234,179,8,.16); color:var(--lottery); }
+    .p-top { background:rgba(34,197,94,.14); color:var(--top); }
+    .champ { color:var(--lottery); }
+    .poolbox { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
+    .poolbox .pt { font-size:12px; color:var(--muted); margin-bottom:6px; }
+    .pool { display:flex; flex-wrap:wrap; gap:8px; }
+    .chip { background:#243049; border:1px solid var(--line); border-radius:999px; padding:5px 10px; font-size:13px; }
+    .chip small { color:var(--muted); }
+    button.toggle { margin:22px 0 0; background:var(--card); color:var(--text); border:1px solid var(--line);
+                    border-radius:10px; padding:11px 16px; font-size:14px; font-weight:600; cursor:pointer; width:100%; }
+    button.toggle:hover { border-color:var(--accent); }
+    .board { margin-top:14px; }
+    .rnd { margin:0 0 10px; }
+    .rnd h3 { font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin:12px 0 4px; }
+    .rows { background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+    .row { display:flex; gap:10px; padding:6px 12px; font-size:13px; border-top:1px solid var(--line); }
+    .row:first-child { border-top:none; }
+    .row .n { color:var(--muted); width:52px; flex:none; font-variant-numeric:tabular-nums; }
+    .row .tbd { color:var(--lottery); font-style:italic; }
+    .note { color:var(--muted); font-size:12px; margin-top:8px; }
+    footer { color:var(--muted); font-size:12px; text-align:center; padding:20px; }
+  </style>
+</head>
+<body>
+  <div class="back"><a href="./">← League of Gods Dashboard</a></div>
+  <header>
+    <h1>Draft Order</h1>
+    <div class="sub">2026 draft · set by 2025 final standings</div>
+    <p class="rule">
+      <b>Bottom 6</b> (last season's 7th–12th) draw <b>picks 1–6</b> by lottery (run manually).
+      <b>Top 6</b> get <b>picks 7–12</b>, worst‑to‑first — the champion picks last.
+      Rounds after the first run <b>serpentine</b> (snake): the last pick of a round makes the first pick of the next.
+    </p>
+  </header>
+
+  <div class="wrap">
+    <h2>Round 1 — Draft Order</h2>
+    <table>
+      <thead><tr><th class="pick">Pick</th><th>Team</th><th>Seed</th></tr></thead>
+      <tbody id="orderBody"></tbody>
+    </table>
+
+    <h2>Lottery pool — picks 1–6 (TBD)</h2>
+    <div class="poolbox">
+      <div class="pt">These six teams draw for the top six picks. Order set once the lottery is run.</div>
+      <div class="pool" id="pool"></div>
+    </div>
+
+    <button class="toggle" id="toggle" onclick="toggleBoard()">▼ Show full draft board (all rounds)</button>
+    <div class="board" id="board" style="display:none"></div>
+    <div class="note" id="roundsNote"></div>
+  </div>
+
+  <footer>League of Gods · draft order</footer>
+
+  <script>
+    var ROUNDS = 16;   // full-board length (placeholder until confirmed)
+
+    // Round-1 slots. Picks 1-6 = lottery (TBD). Picks 7-12 = top 6, worst-to-first.
+    var ORDER = [
+      { pick: 1, lottery: true }, { pick: 2, lottery: true }, { pick: 3, lottery: true },
+      { pick: 4, lottery: true }, { pick: 5, lottery: true }, { pick: 6, lottery: true },
+      { pick: 7,  team: 'Earth Crusher',                 manager: 'Willy',              seed: 6 },
+      { pick: 8,  team: 'The Saudi Ladle Boys',          manager: 'Ryan Wimberly',      seed: 5 },
+      { pick: 9,  team: 'Murray Up That Hill n Cook',    manager: 'numberoneplayer',    seed: 4 },
+      { pick: 10, team: 'A Magician Named GOB',          manager: 'Tomas',              seed: 3 },
+      { pick: 11, team: 'Ръцете ми са направени от гран', manager: 'A.K. 47',            seed: 2 },
+      { pick: 12, team: 'The Catwalk Models',            manager: 'ChuckoCommissioner', seed: 1 }
+    ];
+    var POOL = [
+      { team: 'Cromarties Daycare',  manager: 'Chris Giorgio', seed: 7 },
+      { team: 'B+ Beard of Pubes',   manager: 'Marc',          seed: 8 },
+      { team: 'John Napier',         manager: 'Sterdaddy',     seed: 9 },
+      { team: 'Cowboy Collars',      manager: 'Graham',        seed: 10 },
+      { team: 'Dirty little Coch',   manager: 'Andy',          seed: 11 },
+      { team: 'Sexy Upside',         manager: 'perry crowell', seed: 12 }
+    ];
+
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+    function ord(n){ return n+({1:'st',2:'nd',3:'rd'}[n%10]&&![11,12,13].includes(n%100)?({1:'st',2:'nd',3:'rd'}[n%10]):'th'); }
+
+    function renderOrder(){
+      document.getElementById('orderBody').innerHTML = ORDER.map(function(s){
+        if (s.lottery) {
+          return '<tr><td class="pick">'+s.pick+'</td>'+
+                 '<td><span class="pill p-lottery">lottery — TBD</span></td>'+
+                 '<td class="mgr">bottom 6</td></tr>';
+        }
+        var champ = s.seed===1;
+        return '<tr><td class="pick">'+s.pick+'</td>'+
+               '<td>'+esc(s.team)+' <span class="mgr">'+esc(s.manager)+'</span></td>'+
+               '<td class="'+(champ?'champ':'')+'">'+(champ?'🏆 ':'')+'finished '+ord(s.seed)+'</td></tr>';
+      }).join('');
+      document.getElementById('pool').innerHTML = POOL.map(function(t){
+        return '<span class="chip">'+esc(t.team)+' <small>'+esc(t.manager)+' · '+ord(t.seed)+'</small></span>';
+      }).join('');
+    }
+
+    function label(slot){
+      return slot.lottery ? '<span class="tbd">Lottery pick '+slot.pick+'</span>'
+                          : esc(slot.team)+' <span class="mgr">'+esc(slot.manager)+'</span>';
+    }
+
+    function renderBoard(){
+      var html = '';
+      for (var r=1; r<=ROUNDS; r++){
+        var slots = (r % 2 === 1) ? ORDER.slice() : ORDER.slice().reverse();
+        html += '<div class="rnd"><h3>Round '+r+'</h3><div class="rows">';
+        slots.forEach(function(slot, i){
+          var overall = (r-1)*12 + (i+1);
+          var tag = r + '.' + String(i+1).padStart(2,'0');
+          html += '<div class="row"><span class="n">'+tag+'</span><span>'+label(slot)+'</span></div>';
+        });
+        html += '</div></div>';
+      }
+      document.getElementById('board').innerHTML = html;
+      document.getElementById('roundsNote').textContent =
+        'Full board shown for ' + ROUNDS + ' rounds (placeholder — tell me your real round count and I’ll fix it). Lottery picks fill in once the lottery is run.';
+    }
+
+    var shown = false;
+    function toggleBoard(){
+      shown = !shown;
+      document.getElementById('board').style.display = shown ? 'block' : 'none';
+      document.getElementById('roundsNote').style.display = shown ? 'block' : 'none';
+      document.getElementById('toggle').textContent = (shown ? '▲ Hide' : '▼ Show') + ' full draft board (all rounds)';
+      if (shown && !document.getElementById('board').innerHTML) renderBoard();
+    }
+
+    renderOrder();
+    document.getElementById('roundsNote').style.display = 'none';
+  </script>
+</body>
+</html>
