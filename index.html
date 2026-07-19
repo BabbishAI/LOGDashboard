@@ -4,34 +4,70 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>League of Gods — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --text:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-           background:var(--bg); color:var(--text); min-height:100vh; }
-    header { padding:36px 20px 8px; text-align:center; }
-    h1 { margin:0; font-size:30px; letter-spacing:.5px; }
-    .tag { color:var(--muted); font-size:14px; margin-top:6px; }
-    .wrap { max-width:640px; margin:0 auto; padding:20px 16px 48px; }
+    :root {
+      --bg:#0a0b10; --panel:rgba(24,26,38,.72); --line:rgba(230,196,106,.22);
+      --gold:#e6c46a; --gold-bright:#f6e3a6; --text:#eae7df; --muted:#a49f95;
+      --blue:#5cc8ff; --purple:#a679ff;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--text);
+           font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+           background:var(--bg); position:relative; overflow-x:hidden; }
+    /* faint mythic backdrop from the same art */
+    body::before { content:''; position:fixed; inset:0; z-index:-2;
+      background:url('gods.jpg') center/cover no-repeat;
+      filter:brightness(.16) saturate(.85) blur(2px); }
+    body::after { content:''; position:fixed; inset:0; z-index:-1;
+      background:radial-gradient(ellipse at 50% 0, rgba(230,196,106,.12), transparent 55%),
+                 linear-gradient(180deg, rgba(10,11,16,.45), rgba(10,11,16,.92)); }
+
+    .hero { position:relative; max-width:1120px; margin:18px auto 0; border-radius:16px;
+            overflow:hidden; border:1px solid var(--line);
+            box-shadow:0 0 46px rgba(230,196,106,.16), 0 24px 60px rgba(0,0,0,.6); }
+    .hero img { width:100%; display:block; }
+    .hero-cap { position:absolute; left:0; right:0; bottom:0; padding:56px 20px 22px; text-align:center;
+                background:linear-gradient(180deg, transparent, rgba(6,7,12,.55) 45%, rgba(6,7,12,.9)); }
+    h1 { font-family:'Cinzel',serif; font-weight:900; margin:0; color:var(--gold-bright);
+         font-size:clamp(30px,7vw,62px); letter-spacing:2px; line-height:1;
+         text-shadow:0 2px 6px #000, 0 0 26px rgba(230,196,106,.45); }
+    .tag { margin-top:8px; color:var(--gold); font-size:clamp(11px,2.4vw,14px);
+           letter-spacing:3px; text-transform:uppercase; font-weight:600; }
+
+    .rule-divider { max-width:1120px; margin:20px auto 4px; height:1px;
+      background:linear-gradient(90deg, transparent, var(--gold), transparent); opacity:.5; }
+
+    .wrap { max-width:720px; margin:0 auto; padding:22px 16px 52px; }
     .card { display:flex; align-items:center; gap:16px; text-decoration:none; color:var(--text);
-            background:var(--card); border:1px solid var(--line); border-radius:14px;
-            padding:18px 18px; margin:14px 0; transition:border-color .15s, transform .05s; }
-    .card:hover { border-color:var(--accent); }
+            background:var(--panel); border:1px solid var(--line); border-radius:14px;
+            padding:18px; margin:14px 0; backdrop-filter:blur(6px);
+            transition:border-color .15s, box-shadow .15s, transform .06s; }
+    .card:hover { border-color:var(--gold); box-shadow:0 0 26px rgba(230,196,106,.18); transform:translateY(-2px); }
     .card:active { transform:scale(.99); }
-    .icon { font-size:30px; line-height:1; width:44px; text-align:center; flex:none; }
-    .ct-title { font-size:18px; font-weight:700; }
+    .icon { font-size:30px; line-height:1; width:46px; text-align:center; flex:none;
+            filter:drop-shadow(0 0 8px rgba(230,196,106,.35)); }
+    .ct-title { font-family:'Cinzel',serif; font-weight:700; font-size:18px; color:var(--gold-bright); letter-spacing:.5px; }
     .ct-sub { color:var(--muted); font-size:13px; margin-top:3px; }
-    .arrow { margin-left:auto; color:var(--muted); font-size:22px; flex:none; }
-    .soon { opacity:.5; cursor:default; }
-    .soon:hover { border-color:var(--line); }
-    footer { color:var(--muted); font-size:12px; text-align:center; padding:0 20px 30px; }
+    .arrow { margin-left:auto; color:var(--gold); font-size:22px; flex:none; }
+    .soon { opacity:.5; }
+    .soon:hover { border-color:var(--line); box-shadow:none; transform:none; }
+    footer { color:var(--muted); font-size:12px; text-align:center; padding:0 20px 34px; letter-spacing:2px; }
+    footer .g { color:var(--gold); }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🏆 League of Gods</h1>
-    <div class="tag">Fantasy Football Dashboard</div>
+  <header class="hero">
+    <img src="gods.jpg" alt="The League of Gods — managers as gods of Olympus">
+    <div class="hero-cap">
+      <h1>League of Gods</h1>
+      <div class="tag">⚡ Fantasy Football · Mount Olympus ⚡</div>
+    </div>
   </header>
+
+  <div class="rule-divider"></div>
 
   <div class="wrap">
     <a class="card" href="keepers.html">
@@ -44,7 +80,7 @@
     </a>
 
     <a class="card" href="draft.html">
-      <div class="icon">📋</div>
+      <div class="icon">⚡</div>
       <div>
         <div class="ct-title">Draft Order</div>
         <div class="ct-sub">Upcoming draft order &amp; snake board, set by last season's standings</div>
@@ -56,13 +92,13 @@
       <div class="icon">📜</div>
       <div>
         <div class="ct-title">League Charter</div>
-        <div class="ct-sub">Official rules &amp; bylaws (Google Doc)</div>
+        <div class="ct-sub">Sacred rules &amp; bylaws (Google Doc)</div>
       </div>
       <div class="arrow">↗</div>
     </a>
 
     <div class="card soon">
-      <div class="icon">✨</div>
+      <div class="icon">🔱</div>
       <div>
         <div class="ct-title">More coming soon</div>
         <div class="ct-sub">Standings, records, payouts, and more</div>
@@ -70,6 +106,6 @@
     </div>
   </div>
 
-  <footer>League of Gods · fantasy football</footer>
+  <footer>⚡ <span class="g">LEAGUE OF GODS</span> · FANTASY FOOTBALL ⚡</footer>
 </body>
 </html>
