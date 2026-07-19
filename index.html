@@ -1,133 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>League of Gods — Dashboard</title>
   <style>
-    :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --text:#e2e8f0; --muted:#94a3b8;
-            --accent:#38bdf8; --cheap:#22c55e; --mid:#eab308; --pricey:#ef4444; }
+    :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --text:#e2e8f0; --muted:#94a3b8; --accent:#38bdf8; }
     * { box-sizing: border-box; }
     body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-           background:var(--bg); color:var(--text); }
-    header { padding:20px 16px 12px; border-bottom:1px solid var(--line); }
-    h1 { margin:0 0 4px; font-size:22px; }
-    .sub { color:var(--muted); font-size:13px; }
-    .rule { margin:10px 0 0; font-size:12px; color:var(--muted); line-height:1.5; }
-    .controls { padding:12px 16px; position:sticky; top:0; background:var(--bg);
-                border-bottom:1px solid var(--line); z-index:5; }
-    select, input { background:var(--card); color:var(--text); border:1px solid var(--line);
-                    border-radius:8px; padding:8px 10px; font-size:14px; width:100%; max-width:360px; }
-    .wrap { padding:12px 16px 40px; max-width:900px; margin:0 auto; }
-    .team { background:var(--card); border:1px solid var(--line); border-radius:12px;
-            margin:14px 0; overflow:hidden; }
-    .team h2 { margin:0; padding:12px 14px; font-size:16px; background:#243049;
-               display:flex; justify-content:space-between; align-items:center; }
-    .team h2 .mgr { color:var(--muted); font-weight:400; font-size:13px; }
-    table { width:100%; border-collapse:collapse; }
-    th, td { text-align:left; padding:9px 14px; font-size:14px; border-top:1px solid var(--line); }
-    th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
-    td.num, th.num { text-align:center; white-space:nowrap; }
-    .pos { color:var(--muted); font-size:12px; }
-    .pill { display:inline-block; min-width:34px; text-align:center; padding:3px 8px;
-            border-radius:999px; font-weight:700; font-size:13px; }
-    .cheap  { background:rgba(34,197,94,.15);  color:var(--cheap); }
-    .mid    { background:rgba(234,179,8,.15);   color:var(--mid); }
-    .pricey { background:rgba(239,68,68,.15);   color:var(--pricey); }
-    .undr { color:var(--muted); font-style:italic; }
-    tr.inelig td { opacity:.5; }
-    .inelig-tag { color:var(--pricey); font-size:12px; font-style:italic; }
-    .note { color:var(--muted); font-size:11px; margin-top:2px; }
-    .kept-badge { display:inline-block; background:rgba(56,189,248,.18); color:var(--accent);
-                  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
-                  padding:2px 6px; border-radius:999px; vertical-align:middle; }
-    .empty { color:var(--muted); padding:14px; }
-    footer { color:var(--muted); font-size:12px; text-align:center; padding:20px; }
+           background:var(--bg); color:var(--text); min-height:100vh; }
+    header { padding:36px 20px 8px; text-align:center; }
+    h1 { margin:0; font-size:30px; letter-spacing:.5px; }
+    .tag { color:var(--muted); font-size:14px; margin-top:6px; }
+    .wrap { max-width:640px; margin:0 auto; padding:20px 16px 48px; }
+    .card { display:flex; align-items:center; gap:16px; text-decoration:none; color:var(--text);
+            background:var(--card); border:1px solid var(--line); border-radius:14px;
+            padding:18px 18px; margin:14px 0; transition:border-color .15s, transform .05s; }
+    .card:hover { border-color:var(--accent); }
+    .card:active { transform:scale(.99); }
+    .icon { font-size:30px; line-height:1; width:44px; text-align:center; flex:none; }
+    .ct-title { font-size:18px; font-weight:700; }
+    .ct-sub { color:var(--muted); font-size:13px; margin-top:3px; }
+    .arrow { margin-left:auto; color:var(--muted); font-size:22px; flex:none; }
+    .soon { opacity:.5; cursor:default; }
+    .soon:hover { border-color:var(--line); }
+    footer { color:var(--muted); font-size:12px; text-align:center; padding:0 20px 30px; }
   </style>
 </head>
 <body>
   <header>
-    <h1 id="title">Keeper Costs</h1>
-    <div class="sub" id="updated"></div>
-    <p class="rule">
-      <b>Cost:</b> the <b>first</b> time you keep a player, it costs the round he was drafted
-      (or <b>round&nbsp;10</b> if that was round 11+ or a waiver pickup). Each year you keep him
-      <b>after that</b>, the cost climbs one round (never better than round&nbsp;1).
-      <br><b>Limit:</b> each team may keep up to <b>2</b> players.
-      <br><b>Eligibility:</b> a player kept <b>two seasons in a row</b> (by the same team) can't be kept again — he goes back in the draft.
-      <br><span class="kept-badge">kept ’25</span> = already a keeper last season, so keeping him again is a repeat (cost climbs).
-      <br><span style="opacity:.8">Offensive players only (kickers/defenses/IDP not shown).</span>
-    </p>
+    <h1>🏆 League of Gods</h1>
+    <div class="tag">Fantasy Football Dashboard</div>
   </header>
 
-  <div class="controls">
-    <select id="teamFilter"><option value="__all">All teams</option></select>
+  <div class="wrap">
+    <a class="card" href="keepers.html">
+      <div class="icon">🏈</div>
+      <div>
+        <div class="ct-title">Keeper Costs</div>
+        <div class="ct-sub">Every team's players and what it costs to keep them this season</div>
+      </div>
+      <div class="arrow">›</div>
+    </a>
+
+    <a class="card" href="https://docs.google.com/document/d/1m2SKrALQeVboMXExxJxRuea4wp5fon79kpB8GDzNuFg/edit" target="_blank" rel="noopener">
+      <div class="icon">📜</div>
+      <div>
+        <div class="ct-title">League Charter</div>
+        <div class="ct-sub">Official rules &amp; bylaws (Google Doc)</div>
+      </div>
+      <div class="arrow">↗</div>
+    </a>
+
+    <div class="card soon">
+      <div class="icon">✨</div>
+      <div>
+        <div class="ct-title">More coming soon</div>
+        <div class="ct-sub">Standings, records, payouts, and more</div>
+      </div>
+    </div>
   </div>
 
-  <div class="wrap" id="content"></div>
-
-  <footer>Built with the Yahoo Fantasy API · costs update every few hours</footer>
-
-  <script>
-    var DATA = {"leagueName":"League of Gods","updated":"Jul 19, 2026","teams":[{"manager":"Tomas","teamName":"A Magician Named GOB","players":[{"name":"Josh Allen","position":"QB","nflTeam":"","lastRound":1,"keptLastYear":false,"cost":1,"eligible":true,"note":""},{"name":"A.J. Brown","position":"WR","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"Trey McBride","position":"TE","nflTeam":"","lastRound":4,"keptLastYear":true,"cost":3,"eligible":true,"note":""},{"name":"Jaylen Waddle","position":"WR","nflTeam":"","lastRound":5,"keptLastYear":false,"cost":5,"eligible":true,"note":""},{"name":"De'Von Achane","position":"RB","nflTeam":"","lastRound":10,"keptLastYear":true,"cost":10,"eligible":false,"note":"kept two straight seasons — must re-draft"}]},{"manager":"Marc","teamName":"B+ Beard of Pubes","players":[{"name":"Ashton Jeanty","position":"RB","nflTeam":"","lastRound":1,"keptLastYear":false,"cost":1,"eligible":true,"note":""},{"name":"Davante Adams","position":"WR","nflTeam":"","lastRound":3,"keptLastYear":false,"cost":3,"eligible":true,"note":""},{"name":"D'Andre Swift","position":"RB","nflTeam":"","lastRound":4,"keptLastYear":false,"cost":4,"eligible":true,"note":""},{"name":"DJ Moore","position":"WR","nflTeam":"","lastRound":4,"keptLastYear":false,"cost":4,"eligible":true,"note":""},{"name":"Jaxson Dart","position":"QB","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"}]},{"manager":"Graham","teamName":"Cowboy Collars","players":[{"name":"Saquon Barkley","position":"RB","nflTeam":"","lastRound":1,"keptLastYear":true,"cost":1,"eligible":false,"note":"kept two straight seasons — must re-draft"},{"name":"Drake London","position":"WR","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"Tony Pollard","position":"RB","nflTeam":"","lastRound":4,"keptLastYear":false,"cost":4,"eligible":true,"note":""},{"name":"Rome Odunze","position":"WR","nflTeam":"","lastRound":5,"keptLastYear":false,"cost":5,"eligible":true,"note":""},{"name":"Joe Burrow","position":"QB","nflTeam":"","lastRound":10,"keptLastYear":true,"cost":10,"eligible":true,"note":""},{"name":"Trevor Lawrence","position":"QB","nflTeam":"","lastRound":15,"keptLastYear":false,"cost":10,"eligible":true,"note":""},{"name":"Kyle Monangai","position":"RB","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"},{"name":"Luther Burden III","position":"WR","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"}]},{"manager":"Chris Giorgio","teamName":"Cromarties Daycare","players":[{"name":"Amon-Ra St. Brown","position":"WR","nflTeam":"","lastRound":1,"keptLastYear":false,"cost":1,"eligible":true,"note":""},{"name":"Lamar Jackson","position":"QB","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"Chuba Hubbard","position":"RB","nflTeam":"","lastRound":3,"keptLastYear":false,"cost":3,"eligible":true,"note":""},{"name":"RJ Harvey","position":"RB","nflTeam":"","lastRound":4,"keptLastYear":false,"cost":4,"eligible":true,"note":""},{"name":"Emeka Egbuka","position":"WR","nflTeam":"","lastRound":5,"keptLastYear":false,"cost":5,"eligible":true,"note":""},{"name":"Chris Olave","position":"WR","nflTeam":"","lastRound":6,"keptLastYear":false,"cost":6,"eligible":true,"note":""},{"name":"Brian Thomas Jr.","position":"WR","nflTeam":"","lastRound":8,"keptLastYear":true,"cost":7,"eligible":true,"note":""},{"name":"Quinshon Judkins","position":"RB","nflTeam":"","lastRound":9,"keptLastYear":false,"cost":9,"eligible":true,"note":""},{"name":"Brock Bowers","position":"TE","nflTeam":"","lastRound":10,"keptLastYear":true,"cost":10,"eligible":true,"note":""},{"name":"Rico Dowdle","position":"RB","nflTeam":"","lastRound":15,"keptLastYear":false,"cost":10,"eligible":true,"note":""}]},{"manager":"Andy","teamName":"Dirty little Coch","players":[{"name":"Justin Jefferson","position":"WR","nflTeam":"","lastRound":1,"keptLastYear":false,"cost":1,"eligible":true,"note":""},{"name":"Tetairoa McMillan","position":"WR","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"Josh Jacobs","position":"RB","nflTeam":"","lastRound":3,"keptLastYear":true,"cost":2,"eligible":true,"note":""},{"name":"Zay Flowers","position":"WR","nflTeam":"","lastRound":4,"keptLastYear":false,"cost":4,"eligible":true,"note":""},{"name":"Jordan Addison","position":"WR","nflTeam":"","lastRound":6,"keptLastYear":false,"cost":6,"eligible":true,"note":""},{"name":"Javonte Williams","position":"RB","nflTeam":"","lastRound":7,"keptLastYear":false,"cost":7,"eligible":true,"note":""},{"name":"Rashee Rice","position":"WR","nflTeam":"","lastRound":8,"keptLastYear":false,"cost":8,"eligible":true,"note":""},{"name":"Kyler Murray","position":"QB","nflTeam":"","lastRound":9,"keptLastYear":false,"cost":9,"eligible":true,"note":""},{"name":"Bucky Irving","position":"RB","nflTeam":"","lastRound":11,"keptLastYear":true,"cost":10,"eligible":true,"note":""},{"name":"Kyle Pitts Sr.","position":"TE","nflTeam":"","lastRound":11,"keptLastYear":false,"cost":10,"eligible":true,"note":""},{"name":"Caleb Williams","position":"QB","nflTeam":"","lastRound":12,"keptLastYear":false,"cost":10,"eligible":true,"note":""}]},{"manager":"Willy","teamName":"Earth Crusher","players":[{"name":"Jahmyr Gibbs","position":"RB","nflTeam":"","lastRound":1,"keptLastYear":true,"cost":1,"eligible":true,"note":""},{"name":"Mike Evans","position":"WR","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"Omarion Hampton","position":"RB","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"Courtland Sutton","position":"WR","nflTeam":"","lastRound":3,"keptLastYear":false,"cost":3,"eligible":true,"note":""},{"name":"Ricky Pearsall","position":"WR","nflTeam":"","lastRound":5,"keptLastYear":false,"cost":5,"eligible":true,"note":""},{"name":"J.K. Dobbins","position":"RB","nflTeam":"","lastRound":7,"keptLastYear":false,"cost":7,"eligible":true,"note":""},{"name":"Sam LaPorta","position":"TE","nflTeam":"","lastRound":8,"keptLastYear":false,"cost":8,"eligible":true,"note":""},{"name":"Bo Nix","position":"QB","nflTeam":"","lastRound":10,"keptLastYear":true,"cost":10,"eligible":true,"note":""},{"name":"Jayden Reed","position":"WR","nflTeam":"","lastRound":10,"keptLastYear":false,"cost":10,"eligible":true,"note":""},{"name":"Tucker Kraft","position":"TE","nflTeam":"","lastRound":10,"keptLastYear":false,"cost":10,"eligible":true,"note":""},{"name":"Christian Watson","position":"WR","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"},{"name":"Colston Loveland","position":"TE","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"}]},{"manager":"Sterdaddy","teamName":"John Napier","players":[{"name":"Breece Hall","position":"RB","nflTeam":"","lastRound":3,"keptLastYear":false,"cost":3,"eligible":true,"note":""},{"name":"DK Metcalf","position":"WR","nflTeam":"","lastRound":4,"keptLastYear":false,"cost":4,"eligible":true,"note":""},{"name":"Jayden Daniels","position":"QB","nflTeam":"","lastRound":4,"keptLastYear":false,"cost":4,"eligible":true,"note":""},{"name":"Patrick Mahomes","position":"QB","nflTeam":"","lastRound":5,"keptLastYear":false,"cost":5,"eligible":true,"note":""},{"name":"Rhamondre Stevenson","position":"RB","nflTeam":"","lastRound":7,"keptLastYear":false,"cost":7,"eligible":true,"note":""},{"name":"Kyren Williams","position":"RB","nflTeam":"","lastRound":9,"keptLastYear":true,"cost":8,"eligible":false,"note":"kept two straight seasons — must re-draft"},{"name":"Cam Skattebo","position":"RB","nflTeam":"","lastRound":12,"keptLastYear":false,"cost":10,"eligible":true,"note":""},{"name":"Parker Washington","position":"WR","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"}]},{"manager":"numberoneplayer","teamName":"Murray Up That Hill n Cook","players":[{"name":"Ja'Marr Chase","position":"WR","nflTeam":"","lastRound":1,"keptLastYear":false,"cost":1,"eligible":true,"note":""},{"name":"Jaxon Smith-Njigba","position":"WR","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"Nico Collins","position":"WR","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"James Cook III","position":"RB","nflTeam":"","lastRound":3,"keptLastYear":true,"cost":2,"eligible":true,"note":""},{"name":"David Montgomery","position":"RB","nflTeam":"","lastRound":5,"keptLastYear":false,"cost":5,"eligible":true,"note":""},{"name":"George Kittle","position":"TE","nflTeam":"","lastRound":7,"keptLastYear":true,"cost":6,"eligible":true,"note":""},{"name":"Chris Godwin Jr.","position":"WR","nflTeam":"","lastRound":8,"keptLastYear":false,"cost":8,"eligible":true,"note":""},{"name":"Justin Herbert","position":"QB","nflTeam":"","lastRound":10,"keptLastYear":false,"cost":10,"eligible":true,"note":""},{"name":"Quentin Johnston","position":"WR","nflTeam":"","lastRound":11,"keptLastYear":false,"cost":10,"eligible":true,"note":""}]},{"manager":"perry crowell","teamName":"Sexy Upside","players":[{"name":"Jalen Hurts","position":"QB","nflTeam":"","lastRound":3,"keptLastYear":false,"cost":3,"eligible":true,"note":""},{"name":"Rachaad White","position":"RB","nflTeam":"","lastRound":9,"keptLastYear":false,"cost":9,"eligible":true,"note":""},{"name":"Tyler Warren","position":"TE","nflTeam":"","lastRound":9,"keptLastYear":false,"cost":9,"eligible":true,"note":""},{"name":"Blake Corum","position":"RB","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"},{"name":"Michael Wilson","position":"WR","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"}]},{"manager":"ChuckoCommissioner","teamName":"The Catwalk Models","players":[{"name":"Bijan Robinson","position":"RB","nflTeam":"","lastRound":1,"keptLastYear":false,"cost":1,"eligible":true,"note":""},{"name":"Marvin Harrison Jr.","position":"WR","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"TreVeyon Henderson","position":"RB","nflTeam":"","lastRound":3,"keptLastYear":false,"cost":3,"eligible":true,"note":""},{"name":"George Pickens","position":"WR","nflTeam":"","lastRound":4,"keptLastYear":false,"cost":4,"eligible":true,"note":""},{"name":"Xavier Worthy","position":"WR","nflTeam":"","lastRound":5,"keptLastYear":false,"cost":5,"eligible":true,"note":""},{"name":"Chase Brown","position":"RB","nflTeam":"","lastRound":6,"keptLastYear":true,"cost":5,"eligible":true,"note":""},{"name":"Ladd McConkey","position":"WR","nflTeam":"","lastRound":8,"keptLastYear":true,"cost":7,"eligible":true,"note":""},{"name":"Michael Pittman Jr.","position":"WR","nflTeam":"","lastRound":10,"keptLastYear":false,"cost":10,"eligible":true,"note":""},{"name":"Dak Prescott","position":"QB","nflTeam":"","lastRound":16,"keptLastYear":false,"cost":10,"eligible":true,"note":""}]},{"manager":"Ryan Wimberly","teamName":"The Saudi Ladle Boys","players":[{"name":"CeeDee Lamb","position":"WR","nflTeam":"","lastRound":1,"keptLastYear":false,"cost":1,"eligible":true,"note":""},{"name":"Derrick Henry","position":"RB","nflTeam":"","lastRound":1,"keptLastYear":false,"cost":1,"eligible":true,"note":""},{"name":"Kenneth Walker III","position":"RB","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"Garrett Wilson","position":"WR","nflTeam":"","lastRound":3,"keptLastYear":false,"cost":3,"eligible":true,"note":""},{"name":"Malik Nabers","position":"WR","nflTeam":"","lastRound":4,"keptLastYear":true,"cost":3,"eligible":true,"note":""},{"name":"DeVonta Smith","position":"WR","nflTeam":"","lastRound":5,"keptLastYear":false,"cost":5,"eligible":true,"note":""},{"name":"Jaylen Warren","position":"RB","nflTeam":"","lastRound":6,"keptLastYear":false,"cost":6,"eligible":true,"note":""},{"name":"Puka Nacua","position":"WR","nflTeam":"","lastRound":7,"keptLastYear":true,"cost":6,"eligible":true,"note":""},{"name":"Drake Maye","position":"QB","nflTeam":"","lastRound":15,"keptLastYear":false,"cost":10,"eligible":true,"note":""},{"name":"Alec Pierce","position":"WR","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"}]},{"manager":"A.K. 47","teamName":"Ръцете ми са направени от гран","players":[{"name":"Christian McCaffrey","position":"RB","nflTeam":"","lastRound":1,"keptLastYear":false,"cost":1,"eligible":true,"note":""},{"name":"Jonathan Taylor","position":"RB","nflTeam":"","lastRound":1,"keptLastYear":false,"cost":1,"eligible":true,"note":""},{"name":"Tee Higgins","position":"WR","nflTeam":"","lastRound":2,"keptLastYear":false,"cost":2,"eligible":true,"note":""},{"name":"Terry McLaurin","position":"WR","nflTeam":"","lastRound":3,"keptLastYear":false,"cost":3,"eligible":true,"note":""},{"name":"Travis Etienne Jr.","position":"RB","nflTeam":"","lastRound":6,"keptLastYear":false,"cost":6,"eligible":true,"note":""},{"name":"Jameson Williams","position":"WR","nflTeam":"","lastRound":9,"keptLastYear":true,"cost":8,"eligible":true,"note":""},{"name":"Brock Purdy","position":"QB","nflTeam":"","lastRound":10,"keptLastYear":false,"cost":10,"eligible":true,"note":""},{"name":"Bhayshul Tuten","position":"RB","nflTeam":"","lastRound":13,"keptLastYear":false,"cost":10,"eligible":true,"note":""},{"name":"Harold Fannin Jr.","position":"TE","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"},{"name":"Kenny Gainwell","position":"RB","nflTeam":"","lastRound":null,"keptLastYear":false,"cost":10,"eligible":true,"note":"waiver pickup"}]}]};
-
-    function costClass(cost) {
-      if (cost <= 4) return 'pricey';   // round 1-4 pick = expensive
-      if (cost <= 8) return 'mid';
-      return 'cheap';                    // round 9-10 = cheap
-    }
-
-    function teamCard(team) {
-      var rows = team.players.map(function (p) {
-        var eligible = p.eligible !== false;
-        var last = (p.lastRound === null) ? '<span class="undr">UD</span>' : ('R' + p.lastRound);
-        var costCell = eligible
-          ? '<span class="pill ' + costClass(p.cost) + '">R' + p.cost + '</span>'
-          : '<span class="inelig-tag">not eligible</span>';
-        var noteHtml = p.note ? '<div class="note">' + escapeHtml(p.note) + '</div>' : '';
-        var keptBadge = p.keptLastYear ? ' <span class="kept-badge">kept ’25</span>' : '';
-        return '<tr class="' + (eligible ? '' : 'inelig') + '">' +
-          '<td>' + escapeHtml(p.name) + ' <span class="pos">' + escapeHtml(p.position) + '</span>' + keptBadge + noteHtml + '</td>' +
-          '<td class="num">' + last + '</td>' +
-          '<td class="num">' + costCell + '</td>' +
-        '</tr>';
-      }).join('');
-      if (!rows) rows = '<tr><td class="empty" colspan="3">No players found.</td></tr>';
-      var eligCount = team.players.filter(function (p) { return p.eligible !== false; }).length;
-      return '<div class="team">' +
-        '<h2>' + escapeHtml(team.teamName || 'Team') +
-          '<span class="mgr">' + escapeHtml(team.manager || '') + ' · ' + eligCount + ' keepable</span></h2>' +
-        '<table><thead><tr>' +
-          '<th>Player</th><th class="num">Last yr</th><th class="num">Keep cost</th>' +
-        '</tr></thead><tbody>' + rows + '</tbody></table></div>';
-    }
-
-    function render(filter) {
-      var teams = DATA.teams.filter(function (t) {
-        return filter === '__all' || (t.teamName + '|' + t.manager) === filter;
-      });
-      document.getElementById('content').innerHTML = teams.map(teamCard).join('') ||
-        '<p class="empty">No teams to show.</p>';
-    }
-
-    function escapeHtml(s) {
-      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
-      });
-    }
-
-    (function init() {
-      document.getElementById('title').textContent = 'Keeper Costs — ' + (DATA.leagueName || '');
-      document.getElementById('updated').textContent = 'Updated ' + (DATA.updated || '');
-      var sel = document.getElementById('teamFilter');
-      DATA.teams.forEach(function (t) {
-        var opt = document.createElement('option');
-        opt.value = t.teamName + '|' + t.manager;
-        opt.textContent = (t.teamName || 'Team') + (t.manager ? ' (' + t.manager + ')' : '');
-        sel.appendChild(opt);
-      });
-      sel.addEventListener('change', function () { render(this.value); });
-      render('__all');
-    })();
-  </script>
+  <footer>League of Gods · fantasy football</footer>
 </body>
 </html>
