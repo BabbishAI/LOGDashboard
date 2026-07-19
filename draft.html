@@ -66,6 +66,7 @@
     .row:first-child { border-top:none; }
     .row .n { color:var(--muted); width:52px; flex:none; font-variant-numeric:tabular-nums; }
     .row .tbd { color:var(--lottery); font-style:italic; }
+    .via { color:var(--accent); font-size:11px; font-weight:600; }
     .note { color:var(--muted); font-size:12px; margin-top:8px; }
     footer { color:var(--muted); font-size:12px; text-align:center; padding:20px; }
   </style>
@@ -122,7 +123,18 @@
   <footer>League of Gods · draft order</footer>
 
   <script>
-    var ROUNDS = 16;   // full-board length (placeholder until confirmed)
+    var ROUNDS = 19;   // covers traded picks up to R19 (confirm exact draft length)
+
+    // 2026 draft-pick trades — original owner's slot in that round now belongs to 'to'.
+    var TRADES = {
+      'Murray Up That Hill n Cook': { 6: 'Sexy Upside' },
+      'Sexy Upside':                { 19: 'Murray Up That Hill n Cook', 16: 'Dirty little Coch' },
+      'Dirty little Coch':          { 2: 'Sexy Upside' },
+      'Earth Crusher':              { 5: 'B+ Beard of Pubes' },
+      'B+ Beard of Pubes':          { 8: 'Earth Crusher' },
+      'The Saudi Ladle Boys':       { 4: 'John Napier' },
+      'John Napier':                { 14: 'The Saudi Ladle Boys' }
+    };
 
     // Picks 7-12: top 6, worst-to-first (champion picks last). Fixed by standings.
     var TOP = [
@@ -207,21 +219,24 @@
         '<table><thead><tr><th>Team</th><th class="num">Finish</th><th class="num">Cups</th><th class="num">#1 pick</th></tr></thead><tbody>'+rows+'</tbody></table>';
     }
 
-    function label(slot){
-      return slot.lottery ? '<span class="tbd">Lottery pick '+slot.pick+'</span>'
-                          : esc(slot.team)+' <span class="mgr">'+esc(slot.manager)+'</span>';
+    function slotLabel(slot, r){
+      if (slot.lottery) return '<span class="tbd">Lottery pick '+slot.pick+'</span>';
+      var to = TRADES[slot.team] && TRADES[slot.team][r];
+      if (to) return esc(to)+' <span class="via">via '+esc(slot.team)+'</span>';
+      return esc(slot.team)+' <span class="mgr">'+esc(slot.manager)+'</span>';
     }
     function renderBoard(){
       var base = round1(), html='';
       for (var r=1; r<=ROUNDS; r++){
         var slots = (r%2===1) ? base.slice() : base.slice().reverse();
         html += '<div class="rnd"><h3>Round '+r+'</h3><div class="rows">';
-        slots.forEach(function(slot,i){ html += '<div class="row"><span class="n">'+r+'.'+String(i+1).padStart(2,'0')+'</span><span>'+label(slot)+'</span></div>'; });
+        slots.forEach(function(slot,i){ html += '<div class="row"><span class="n">'+r+'.'+String(i+1).padStart(2,'0')+'</span><span>'+slotLabel(slot,r)+'</span></div>'; });
         html += '</div></div>';
       }
       document.getElementById('board').innerHTML = html;
-      document.getElementById('roundsNote').textContent =
-        'Full board shown for '+ROUNDS+' rounds (placeholder — confirm your round count). Lottery picks fill once results are entered.';
+      document.getElementById('roundsNote').innerHTML =
+        'Full board shown for <b>'+ROUNDS+'</b> rounds (placeholder — confirm your exact draft length). '+
+        '“<span class="via">via [team]</span>” = pick acquired by trade. Trades involving <b>lottery teams</b> appear once the lottery is locked; lottery picks fill once results are entered.';
     }
 
     // ---- entry tool ----
