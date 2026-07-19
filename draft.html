@@ -13,7 +13,12 @@
     .back { padding:12px 16px 0; }
     .back a { color:var(--accent); font-size:14px; text-decoration:none; font-weight:600; }
     header { padding:16px 16px 8px; }
-    h1 { margin:0 0 4px; font-size:22px; }
+    h1 { margin:0 0 4px; font-size:22px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .badge { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+             padding:3px 9px; border-radius:999px; }
+    .b-pending { background:rgba(148,163,184,.18); color:var(--muted); }
+    .b-preview { background:rgba(56,189,248,.16); color:var(--accent); }
+    .b-locked  { background:rgba(34,197,94,.16); color:var(--top); }
     .sub { color:var(--muted); font-size:13px; }
     .rule { margin:10px 0 0; font-size:12px; color:var(--muted); line-height:1.5; }
     .wrap { padding:12px 16px 48px; max-width:760px; margin:0 auto; }
@@ -25,22 +30,36 @@
     td.pick, th.pick { text-align:center; width:52px; font-weight:700; }
     td.num, th.num { text-align:center; white-space:nowrap; }
     td.odds { color:var(--top); font-weight:700; }
-    .poolbox table { margin-top:10px; }
     .mgr { color:var(--muted); font-size:12px; }
     .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; }
     .p-lottery { background:rgba(234,179,8,.16); color:var(--lottery); }
-    .p-top { background:rgba(34,197,94,.14); color:var(--top); }
+    .p-locked { background:rgba(34,197,94,.16); color:var(--top); }
     .champ { color:var(--lottery); }
     .poolbox { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 14px; }
     .poolbox .pt { font-size:12px; color:var(--muted); margin-bottom:6px; }
-    .pool { display:flex; flex-wrap:wrap; gap:8px; }
-    .chip { background:#243049; border:1px solid var(--line); border-radius:999px; padding:5px 10px; font-size:13px; }
-    .chip small { color:var(--muted); }
+    .poolbox table { margin-top:10px; }
+    /* entry tool */
+    details.entry { margin-top:22px; background:var(--card); border:1px solid var(--line); border-radius:12px; }
+    details.entry summary { cursor:pointer; padding:14px 16px; font-weight:600; font-size:14px; list-style:none; }
+    details.entry summary::-webkit-details-marker { display:none; }
+    details.entry[open] summary { border-bottom:1px solid var(--line); }
+    .entry-body { padding:14px 16px; }
+    .prow { display:flex; align-items:center; gap:10px; margin:8px 0; }
+    .prow label { width:66px; color:var(--muted); font-size:13px; flex:none; }
+    select { flex:1; background:#243049; color:var(--text); border:1px solid var(--line);
+             border-radius:8px; padding:8px 9px; font-size:14px; }
+    .btns { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .btn { background:#243049; color:var(--text); border:1px solid var(--line); border-radius:9px;
+           padding:9px 14px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn.primary { background:var(--accent); color:#04263a; border-color:var(--accent); }
+    .btn:hover { border-color:var(--accent); }
+    .msg { margin-top:12px; font-size:13px; color:var(--muted); line-height:1.5; word-break:break-all; }
+    .msg code { background:#0b1220; border:1px solid var(--line); border-radius:6px; padding:2px 6px; color:var(--accent); }
+    .govern { font-size:11px; color:var(--muted); margin-top:10px; line-height:1.5; }
     button.toggle { margin:22px 0 0; background:var(--card); color:var(--text); border:1px solid var(--line);
                     border-radius:10px; padding:11px 16px; font-size:14px; font-weight:600; cursor:pointer; width:100%; }
     button.toggle:hover { border-color:var(--accent); }
     .board { margin-top:14px; }
-    .rnd { margin:0 0 10px; }
     .rnd h3 { font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin:12px 0 4px; }
     .rows { background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
     .row { display:flex; gap:10px; padding:6px 12px; font-size:13px; border-top:1px solid var(--line); }
@@ -54,12 +73,12 @@
 <body>
   <div class="back"><a href="./">← League of Gods Dashboard</a></div>
   <header>
-    <h1>Draft Order</h1>
+    <h1>Draft Order <span id="status" class="badge b-pending">lottery pending</span></h1>
     <div class="sub">2026 draft · set by 2025 final standings</div>
     <p class="rule">
-      <b>Bottom 6</b> (last season's 7th–12th) draw <b>picks 1–6</b> by lottery (run manually).
+      <b>Bottom 6</b> (last season's 7th–12th) draw <b>picks 1–6</b> by lottery.
       <b>Top 6</b> get <b>picks 7–12</b>, worst‑to‑first — the champion picks last.
-      Rounds after the first run <b>serpentine</b> (snake): the last pick of a round makes the first pick of the next.
+      Rounds after the first run <b>serpentine</b> (snake).
     </p>
   </header>
 
@@ -70,15 +89,34 @@
       <tbody id="orderBody"></tbody>
     </table>
 
-    <h2>Lottery pool — picks 1–6 (TBD)</h2>
+    <h2>Lottery odds — picks 1–6</h2>
     <div class="poolbox">
-      <div class="pt">Each team gets cups based on finish — <b>7th place 6 cups</b>, down to <b>12th place 1 cup</b> (21 total). Cups are drawn to set picks 1–6; odds shown are the chance at the #1 pick.</div>
+      <div class="pt">Cups by finish — <b>7th place 6 cups</b> down to <b>12th place 1 cup</b> (21 total). Drawn to set picks 1–6; odds are the chance at the #1 pick.</div>
       <div id="pool"></div>
     </div>
 
+    <details class="entry">
+      <summary>🔒 Enter / update lottery results (commissioner)</summary>
+      <div class="entry-body">
+        <div id="selects"></div>
+        <div class="btns">
+          <button class="btn primary" onclick="preview()">Preview &amp; lock (this device)</button>
+          <button class="btn" onclick="copyLink()">Copy shareable link</button>
+          <button class="btn" onclick="clearPreview()">Clear</button>
+        </div>
+        <div class="msg" id="entryMsg"></div>
+        <div class="govern">
+          Preview locks the order in <b>your</b> browser and creates a shareable link. To make it
+          <b>official for the whole league</b>, the result must be <b>published</b> (a deliberate,
+          traceable step) — send the result code below to publish. Corrections follow the same
+          governance: re‑enter and re‑publish.
+        </div>
+      </div>
+    </details>
+
     <button class="toggle" id="toggle" onclick="toggleBoard()">▼ Show full draft board (all rounds)</button>
     <div class="board" id="board" style="display:none"></div>
-    <div class="note" id="roundsNote"></div>
+    <div class="note" id="roundsNote" style="display:none"></div>
   </div>
 
   <footer>League of Gods · draft order</footer>
@@ -86,10 +124,8 @@
   <script>
     var ROUNDS = 16;   // full-board length (placeholder until confirmed)
 
-    // Round-1 slots. Picks 1-6 = lottery (TBD). Picks 7-12 = top 6, worst-to-first.
-    var ORDER = [
-      { pick: 1, lottery: true }, { pick: 2, lottery: true }, { pick: 3, lottery: true },
-      { pick: 4, lottery: true }, { pick: 5, lottery: true }, { pick: 6, lottery: true },
+    // Picks 7-12: top 6, worst-to-first (champion picks last). Fixed by standings.
+    var TOP = [
       { pick: 7,  team: 'Earth Crusher',                 manager: 'Willy',              seed: 6 },
       { pick: 8,  team: 'The Saudi Ladle Boys',          manager: 'Ryan Wimberly',      seed: 5 },
       { pick: 9,  team: 'Murray Up That Hill n Cook',    manager: 'numberoneplayer',    seed: 4 },
@@ -97,7 +133,7 @@
       { pick: 11, team: 'Ръцете ми са направени от гран', manager: 'A.K. 47',            seed: 2 },
       { pick: 12, team: 'The Catwalk Models',            manager: 'ChuckoCommissioner', seed: 1 }
     ];
-    // cups by finish: 7th place 6 cups, down to 12th place 1 cup (21 total)
+    // Lottery pool (picks 1-6). cups: 7th place 6 -> 12th place 1.
     var POOL = [
       { team: 'Cromarties Daycare',  manager: 'Chris Giorgio', seed: 7,  cups: 6 },
       { team: 'B+ Beard of Pubes',   manager: 'Marc',          seed: 8,  cups: 5 },
@@ -107,67 +143,131 @@
       { team: 'Sexy Upside',         manager: 'perry crowell', seed: 12, cups: 1 }
     ];
 
+    // PUBLISHED lottery result: seeds of the teams that won picks 1..6 (empty = not yet published).
+    var LOTTERY_RESULT = [];
+
     function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
-    function ord(n){ return n+({1:'st',2:'nd',3:'rd'}[n%10]&&![11,12,13].includes(n%100)?({1:'st',2:'nd',3:'rd'}[n%10]):'th'); }
+    function ord(n){ var s=['th','st','nd','rd'], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); }
+    var poolBySeed = {}; POOL.forEach(function(t){ poolBySeed[t.seed]=t; });
+
+    // parse a result from the URL (?lottery=7,9,12,...) — for shareable previews
+    function urlResult(){
+      var raw = new URLSearchParams(location.search).get('lottery');
+      if (!raw) return null;
+      var seeds = raw.split(',').map(Number);
+      return validSeeds(seeds) ? seeds : null;
+    }
+    function validSeeds(seeds){
+      if (!seeds || seeds.length !== 6) return false;
+      var set = {}; for (var i=0;i<6;i++){ var s=seeds[i]; if (!poolBySeed[s] || set[s]) return false; set[s]=1; } return true;
+    }
+
+    // {seeds, status} — 'published' (baked), 'preview' (url or in-page), or null
+    var previewSeeds = null;
+    function getResult(){
+      if (previewSeeds) return { seeds: previewSeeds, status: 'preview' };
+      var u = urlResult(); if (u) return { seeds: u, status: 'preview' };
+      if (validSeeds(LOTTERY_RESULT)) return { seeds: LOTTERY_RESULT, status: 'published' };
+      return null;
+    }
+
+    // build the 12 round-1 slots (picks 1-6 from result if set, else lottery TBD)
+    function round1(){
+      var res = getResult();
+      var slots = [];
+      for (var p=1; p<=6; p++){
+        if (res){ var t = poolBySeed[res.seeds[p-1]]; slots.push({ pick:p, team:t.team, manager:t.manager, seed:t.seed, locked:true }); }
+        else slots.push({ pick:p, lottery:true });
+      }
+      return slots.concat(TOP);
+    }
+
+    function setStatus(){
+      var res = getResult(), el = document.getElementById('status');
+      if (!res){ el.className='badge b-pending'; el.textContent='lottery pending'; }
+      else if (res.status==='published'){ el.className='badge b-locked'; el.textContent='🔒 locked'; }
+      else { el.className='badge b-preview'; el.textContent='preview (unofficial)'; }
+    }
 
     function renderOrder(){
-      document.getElementById('orderBody').innerHTML = ORDER.map(function(s){
-        if (s.lottery) {
-          return '<tr><td class="pick">'+s.pick+'</td>'+
-                 '<td><span class="pill p-lottery">lottery — TBD</span></td>'+
-                 '<td class="mgr">bottom 6</td></tr>';
-        }
+      document.getElementById('orderBody').innerHTML = round1().map(function(s){
+        if (s.lottery)
+          return '<tr><td class="pick">'+s.pick+'</td><td><span class="pill p-lottery">lottery — TBD</span></td><td class="mgr">bottom 6</td></tr>';
+        if (s.locked)
+          return '<tr><td class="pick">'+s.pick+'</td><td>'+esc(s.team)+' <span class="mgr">'+esc(s.manager)+'</span> <span class="pill p-locked">lottery</span></td><td class="mgr">finished '+ord(s.seed)+'</td></tr>';
         var champ = s.seed===1;
-        return '<tr><td class="pick">'+s.pick+'</td>'+
-               '<td>'+esc(s.team)+' <span class="mgr">'+esc(s.manager)+'</span></td>'+
-               '<td class="'+(champ?'champ':'')+'">'+(champ?'🏆 ':'')+'finished '+ord(s.seed)+'</td></tr>';
+        return '<tr><td class="pick">'+s.pick+'</td><td>'+esc(s.team)+' <span class="mgr">'+esc(s.manager)+'</span></td><td class="'+(champ?'champ':'')+'">'+(champ?'🏆 ':'')+'finished '+ord(s.seed)+'</td></tr>';
       }).join('');
-      var total = POOL.reduce(function(s,t){ return s + t.cups; }, 0);
-      var rows = POOL.slice().sort(function(a,b){ return b.cups - a.cups; }).map(function(t){
-        var odds = (t.cups / total * 100).toFixed(1);
-        return '<tr><td>'+esc(t.team)+' <span class="mgr">'+esc(t.manager)+'</span></td>'+
-               '<td class="num">'+ord(t.seed)+'</td>'+
-               '<td class="num">'+t.cups+'</td>'+
-               '<td class="num odds">'+odds+'%</td></tr>';
+
+      var total = POOL.reduce(function(s,t){ return s+t.cups; },0);
+      var rows = POOL.slice().sort(function(a,b){ return b.cups-a.cups; }).map(function(t){
+        return '<tr><td>'+esc(t.team)+' <span class="mgr">'+esc(t.manager)+'</span></td><td class="num">'+ord(t.seed)+'</td><td class="num">'+t.cups+'</td><td class="num odds">'+(t.cups/total*100).toFixed(1)+'%</td></tr>';
       }).join('');
       document.getElementById('pool').innerHTML =
-        '<table><thead><tr><th>Team</th><th class="num">Finish</th><th class="num">Cups</th><th class="num">#1 pick</th></tr></thead><tbody>'+
-        rows+'<tr><td class="mgr">Total</td><td></td><td class="num mgr">'+total+'</td><td></td></tr></tbody></table>';
+        '<table><thead><tr><th>Team</th><th class="num">Finish</th><th class="num">Cups</th><th class="num">#1 pick</th></tr></thead><tbody>'+rows+'</tbody></table>';
     }
 
     function label(slot){
       return slot.lottery ? '<span class="tbd">Lottery pick '+slot.pick+'</span>'
                           : esc(slot.team)+' <span class="mgr">'+esc(slot.manager)+'</span>';
     }
-
     function renderBoard(){
-      var html = '';
+      var base = round1(), html='';
       for (var r=1; r<=ROUNDS; r++){
-        var slots = (r % 2 === 1) ? ORDER.slice() : ORDER.slice().reverse();
+        var slots = (r%2===1) ? base.slice() : base.slice().reverse();
         html += '<div class="rnd"><h3>Round '+r+'</h3><div class="rows">';
-        slots.forEach(function(slot, i){
-          var overall = (r-1)*12 + (i+1);
-          var tag = r + '.' + String(i+1).padStart(2,'0');
-          html += '<div class="row"><span class="n">'+tag+'</span><span>'+label(slot)+'</span></div>';
-        });
+        slots.forEach(function(slot,i){ html += '<div class="row"><span class="n">'+r+'.'+String(i+1).padStart(2,'0')+'</span><span>'+label(slot)+'</span></div>'; });
         html += '</div></div>';
       }
       document.getElementById('board').innerHTML = html;
       document.getElementById('roundsNote').textContent =
-        'Full board shown for ' + ROUNDS + ' rounds (placeholder — tell me your real round count and I’ll fix it). Lottery picks fill in once the lottery is run.';
+        'Full board shown for '+ROUNDS+' rounds (placeholder — confirm your round count). Lottery picks fill once results are entered.';
     }
 
-    var shown = false;
+    // ---- entry tool ----
+    function buildSelects(){
+      var opts = '<option value="">— select team —</option>' + POOL.map(function(t){ return '<option value="'+t.seed+'">'+esc(t.team)+' ('+esc(t.manager)+')</option>'; }).join('');
+      var html=''; for (var p=1;p<=6;p++) html += '<div class="prow"><label>Pick '+p+'</label><select id="sel'+p+'">'+opts+'</select></div>';
+      document.getElementById('selects').innerHTML = html;
+      var cur = getResult(); // prefill from current result if any
+      if (cur) for (var i=1;i<=6;i++) document.getElementById('sel'+i).value = cur.seeds[i-1];
+    }
+    function readSelects(){
+      var seeds=[]; for (var p=1;p<=6;p++){ var v=document.getElementById('sel'+p).value; if(!v) return {err:'Every pick (1–6) must have a team.'}; seeds.push(Number(v)); }
+      if (!validSeeds(seeds)) return {err:'Each of the six teams must be used exactly once.'};
+      return {seeds:seeds};
+    }
+    function preview(){
+      var r = readSelects(); var m = document.getElementById('entryMsg');
+      if (r.err){ m.innerHTML = '⚠️ '+r.err; return; }
+      previewSeeds = r.seeds; renderAll();
+      var code = r.seeds.join(',');
+      m.innerHTML = '✅ Order locked on this device. To publish for everyone, send this code:<br><code>'+code+'</code><br>Or share the link (button above).';
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+    function copyLink(){
+      var r = readSelects(); var m = document.getElementById('entryMsg');
+      if (r.err){ m.innerHTML = '⚠️ '+r.err; return; }
+      var link = location.origin + location.pathname + '?lottery=' + r.seeds.join(',');
+      if (navigator.clipboard) navigator.clipboard.writeText(link);
+      m.innerHTML = 'Shareable preview link (copied):<br><code>'+esc(link)+'</code>';
+    }
+    function clearPreview(){
+      previewSeeds = null; for (var p=1;p<=6;p++) document.getElementById('sel'+p).value='';
+      document.getElementById('entryMsg').textContent=''; renderAll();
+    }
+
+    var shown=false;
     function toggleBoard(){
-      shown = !shown;
-      document.getElementById('board').style.display = shown ? 'block' : 'none';
-      document.getElementById('roundsNote').style.display = shown ? 'block' : 'none';
-      document.getElementById('toggle').textContent = (shown ? '▲ Hide' : '▼ Show') + ' full draft board (all rounds)';
-      if (shown && !document.getElementById('board').innerHTML) renderBoard();
+      shown=!shown;
+      document.getElementById('board').style.display = shown?'block':'none';
+      document.getElementById('roundsNote').style.display = shown?'block':'none';
+      document.getElementById('toggle').textContent = (shown?'▲ Hide':'▼ Show')+' full draft board (all rounds)';
+      if (shown) renderBoard();
     }
 
-    renderOrder();
-    document.getElementById('roundsNote').style.display = 'none';
+    function renderAll(){ setStatus(); renderOrder(); if (shown) renderBoard(); }
+    buildSelects(); renderAll();
   </script>
 </body>
 </html>
