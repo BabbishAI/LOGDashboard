@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rules & Voting — League of Gods</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0a0b10; --panel:rgba(24,26,38,.72); --line:rgba(230,196,106,.22);
+            --gold:#e6c46a; --gold-bright:#f6e3a6; --text:#eae7df; --muted:#a49f95;
+            --green:#22c55e; --red:#ef4444; --blue:#5cc8ff; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--text); background:var(--bg);
+           font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; }
+    body::before { content:''; position:fixed; inset:0; z-index:-2; background:url('gods.jpg') center/cover no-repeat;
+      filter:brightness(.14) saturate(.85) blur(2px); }
+    body::after { content:''; position:fixed; inset:0; z-index:-1;
+      background:radial-gradient(ellipse at 50% 0, rgba(230,196,106,.10), transparent 55%), linear-gradient(180deg, rgba(10,11,16,.5), rgba(10,11,16,.93)); }
+    .back { padding:12px 16px 0; } .back a { color:var(--gold); font-size:14px; text-decoration:none; font-weight:600; }
+    header { padding:14px 16px 6px; max-width:820px; margin:0 auto; }
+    h1 { font-family:'Cinzel',serif; font-weight:900; margin:0; color:var(--gold-bright); font-size:26px; letter-spacing:1px; text-shadow:0 0 20px rgba(230,196,106,.35); }
+    .rule { color:var(--muted); font-size:12.5px; margin:8px 0 0; line-height:1.55; }
+    .wrap { max-width:820px; margin:0 auto; padding:12px 16px 60px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; margin:14px 0; backdrop-filter:blur(6px); }
+    .card h2 { font-family:'Cinzel',serif; font-size:16px; color:var(--gold-bright); margin:0 0 10px; }
+    label { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; text-transform:uppercase; letter-spacing:.04em; }
+    input, textarea { width:100%; background:#12131c; color:var(--text); border:1px solid var(--line); border-radius:9px; padding:10px; font-size:14px; font-family:inherit; }
+    textarea { min-height:74px; resize:vertical; }
+    .pinbar input { max-width:200px; text-transform:uppercase; letter-spacing:2px; font-weight:700; }
+    .btn { background:#243049; color:var(--text); border:1px solid var(--line); border-radius:9px; padding:9px 15px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .btn.gold { background:var(--gold); color:#2a2205; border-color:var(--gold); }
+    .btn.yes { border-color:rgba(34,197,94,.5); color:var(--green); }
+    .btn.no  { border-color:rgba(239,68,68,.5); color:var(--red); }
+    .btn:hover { border-color:var(--gold); } .btn:disabled { opacity:.5; cursor:default; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .msg { font-size:13px; margin-top:10px; min-height:18px; }
+    .msg.err { color:var(--red); } .msg.ok { color:var(--green); }
+    .prop { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; margin:14px 0; }
+    .prop .top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+    .prop h3 { font-family:'Cinzel',serif; font-size:17px; color:var(--gold-bright); margin:0; }
+    .prop .desc { color:var(--text); font-size:14px; margin:8px 0; white-space:pre-wrap; }
+    .by { color:var(--muted); font-size:12px; }
+    .badge { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; padding:4px 9px; border-radius:999px; white-space:nowrap; flex:none; }
+    .b-open { background:rgba(92,200,255,.16); color:var(--blue); }
+    .b-carried { background:rgba(34,197,94,.16); color:var(--green); }
+    .b-failed { background:rgba(239,68,68,.16); color:var(--red); }
+    .tally { display:flex; align-items:center; gap:12px; margin:10px 0; font-size:14px; flex-wrap:wrap; }
+    .bar { flex:1; min-width:140px; height:8px; background:#12131c; border-radius:999px; overflow:hidden; border:1px solid var(--line); }
+    .bar > span { display:block; height:100%; background:var(--green); }
+    .need { color:var(--muted); font-size:12px; }
+    .votes { margin-top:8px; }
+    .votes summary { cursor:pointer; color:var(--muted); font-size:12px; }
+    .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .chip { font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid var(--line); }
+    .chip.y { color:var(--green); } .chip.n { color:var(--red); }
+    .admin { margin-top:12px; padding-top:10px; border-top:1px solid var(--line); display:flex; gap:14px; }
+    .admin a { color:var(--muted); font-size:12px; cursor:pointer; text-decoration:underline; }
+    .admin a:hover { color:var(--gold); }
+    details.mini summary { cursor:pointer; color:var(--gold); font-size:13px; font-weight:600; }
+    .empty { color:var(--muted); text-align:center; padding:24px; }
+    footer { color:var(--muted); font-size:12px; text-align:center; padding:20px; letter-spacing:2px; }
+  </style>
+</head>
+<body>
+  <div class="back"><a href="./">← League of Gods Dashboard</a></div>
+  <header>
+    <h1>⚖️ Rules &amp; Voting</h1>
+    <p class="rule">Propose a rule change with your team PIN. Every team votes Yes/No — <b>7 of 12 Yes carries</b>.
+      The commissioner closes each vote; carried rules join the Charter. Your PIN identifies your team — keep it private.</p>
+  </header>
+
+  <div class="wrap">
+    <div class="card pinbar">
+      <label>Your team PIN (used for everything below)</label>
+      <div class="row">
+        <input id="pin" placeholder="6-character PIN" maxlength="20" autocomplete="off">
+        <details class="mini"><summary>Change my PIN</summary>
+          <div style="margin-top:10px">
+            <label>New PIN (min 4 chars)</label>
+            <div class="row">
+              <input id="newpin" placeholder="new PIN" maxlength="20" style="max-width:200px">
+              <button class="btn" onclick="changePin()">Update PIN</button>
+            </div>
+            <div class="msg" id="pinMsg"></div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Propose a rule change</h2>
+      <label>Subject</label>
+      <input id="subject" placeholder="Short title, e.g. 'Increase keeper limit to 3'" maxlength="140">
+      <label>Description</label>
+      <textarea id="desc" placeholder="Explain the change and the reasoning…"></textarea>
+      <div class="row" style="margin-top:12px"><button class="btn gold" onclick="submitProp()">Submit proposal</button></div>
+      <div class="msg" id="subMsg"></div>
+    </div>
+
+    <h2 style="font-family:'Cinzel',serif;color:var(--gold-bright);font-size:18px;margin:24px 4px 4px;">Proposals</h2>
+    <div id="list"><div class="empty">Loading…</div></div>
+  </div>
+
+  <footer>⚖️ THE COUNCIL OF GODS ⚖️</footer>
+
+  <script>
+    var API = 'https://script.google.com/macros/s/AKfycbzmaK3bMou26iCNx_FOfnx-0TcNHOC1t2qjS5qU9gy9ZiAeN0yh9wx1r39Rhiyk7byz/exec';
+    var THRESHOLD = 7;
+
+    function api(params){
+      var q = Object.keys(params).map(function(k){ return k+'='+encodeURIComponent(params[k]); }).join('&');
+      return fetch(API+'?'+q).then(function(r){ return r.json(); });
+    }
+    function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+    function pin(){ return document.getElementById('pin').value.trim(); }
+    function msg(el, text, ok){ var e=document.getElementById(el); e.textContent=text; e.className='msg '+(ok?'ok':'err'); }
+
+    function load(){
+      api({action:'state'}).then(render).catch(function(){ document.getElementById('list').innerHTML='<div class="empty">Could not reach the league server. Try refresh.</div>'; });
+    }
+
+    function render(state){
+      THRESHOLD = state.threshold || 7;
+      var props = state.proposals || [];
+      if (!props.length){ document.getElementById('list').innerHTML='<div class="empty">No proposals yet — be the first to propose a rule.</div>'; return; }
+      document.getElementById('list').innerHTML = props.map(function(p){
+        var open = p.status === 'open';
+        var badge = open ? '<span class="badge b-open">open</span>'
+                  : (p.result==='carried' ? '<span class="badge b-carried">carried</span>' : '<span class="badge b-failed">failed</span>');
+        var pct = Math.min(100, Math.round(p.yes / THRESHOLD * 100));
+        var need = p.yes >= THRESHOLD ? 'Would carry ✓' : (THRESHOLD - p.yes) + ' more Yes to carry';
+        var chips = (p.votes||[]).map(function(v){ return '<span class="chip '+(v.vote==='yes'?'y':'n')+'">'+esc(v.team)+': '+(v.vote==='yes'?'Yes':'No')+'</span>'; }).join('');
+        var voteRow = open
+          ? '<div class="row" style="margin-top:6px"><button class="btn yes" onclick="vote(\''+p.id+'\',\'yes\')">Vote Yes</button>'+
+            '<button class="btn no" onclick="vote(\''+p.id+'\',\'no\')">Vote No</button><span class="msg" id="m_'+p.id+'"></span></div>'
+          : '';
+        var admin = '<div class="admin">'+
+            (open ? '<a onclick="closeVote(\''+p.id+'\')">Close vote (commissioner)</a>' : '')+
+            '<a onclick="delProp(\''+p.id+'\')">Delete (commissioner)</a></div>';
+        return '<div class="prop">'+
+          '<div class="top"><h3>'+esc(p.subject)+'</h3>'+badge+'</div>'+
+          (p.description ? '<div class="desc">'+esc(p.description)+'</div>' : '')+
+          '<div class="by">proposed by '+esc(p.by)+'</div>'+
+          '<div class="tally"><b style="color:var(--green)">'+p.yes+' Yes</b> · <b style="color:var(--red)">'+p.no+' No</b>'+
+            '<div class="bar"><span style="width:'+pct+'%"></span></div>'+
+            (open ? '<span class="need">'+need+'</span>' : '')+'</div>'+
+          voteRow+
+          (chips ? '<details class="votes"><summary>vote log ('+(p.votes||[]).length+')</summary><div class="chips">'+chips+'</div></details>' : '')+
+          admin+
+        '</div>';
+      }).join('');
+    }
+
+    function submitProp(){
+      if (!pin()) return msg('subMsg','Enter your PIN up top first.', false);
+      var subject = document.getElementById('subject').value.trim();
+      if (!subject) return msg('subMsg','Subject is required.', false);
+      msg('subMsg','Submitting…', true);
+      api({action:'submit', pin:pin(), subject:subject, desc:document.getElementById('desc').value.trim()}).then(function(r){
+        if (r.ok){ msg('subMsg','Submitted as '+r.by+'.', true); document.getElementById('subject').value=''; document.getElementById('desc').value=''; load(); }
+        else msg('subMsg', r.error||'Failed', false);
+      });
+    }
+    function vote(id, v){
+      if (!pin()) return msg('m_'+id,'Enter your PIN up top.', false);
+      msg('m_'+id,'Saving…', true);
+      api({action:'vote', pin:pin(), id:id, vote:v}).then(function(r){
+        if (r.ok){ msg('m_'+id,(r.team||'Vote')+': '+v.toUpperCase()+(r.changed?' (changed)':''), true); load(); }
+        else msg('m_'+id, r.error||'Failed', false);
+      });
+    }
+    function closeVote(id){
+      if (!pin()) return alert('Enter your PIN up top first.');
+      if (!confirm('Close voting on this proposal? This tallies the final result.')) return;
+      api({action:'close', pin:pin(), id:id}).then(function(r){ if(r.ok){ load(); } else alert(r.error||'Failed'); });
+    }
+    function delProp(id){
+      if (!pin()) return alert('Enter your PIN up top first.');
+      if (!confirm('Delete this proposal permanently?')) return;
+      api({action:'delete', pin:pin(), id:id}).then(function(r){ if(r.ok){ load(); } else alert(r.error||'Failed'); });
+    }
+    function changePin(){
+      if (!pin()) return msg('pinMsg','Enter your current PIN up top first.', false);
+      var np = document.getElementById('newpin').value.trim();
+      if (np.length < 4) return msg('pinMsg','New PIN must be at least 4 characters.', false);
+      api({action:'changepin', pin:pin(), newpin:np}).then(function(r){
+        if (r.ok){ msg('pinMsg','PIN updated — use your new PIN from now on.', true); document.getElementById('pin').value=np.toUpperCase(); document.getElementById('newpin').value=''; }
+        else msg('pinMsg', r.error||'Failed', false);
+      });
+    }
+
+    load();
+  </script>
+</body>
+</html>
