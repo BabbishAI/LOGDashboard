@@ -101,17 +101,19 @@
       <summary>🔒 Enter / update lottery results (commissioner)</summary>
       <div class="entry-body">
         <div id="selects"></div>
+        <label style="display:block;font-size:12px;color:var(--muted);margin:12px 0 4px;text-transform:uppercase;letter-spacing:.04em">Commissioner PIN (required to publish)</label>
+        <input id="lotpin" type="password" autocomplete="off" placeholder="admin PIN"
+               style="background:#243049;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 9px;font-size:14px;max-width:200px">
         <div class="btns">
-          <button class="btn primary" onclick="preview()">Preview &amp; lock (this device)</button>
-          <button class="btn" onclick="copyLink()">Copy shareable link</button>
+          <button class="btn" onclick="preview()">Preview (this device)</button>
+          <button class="btn primary" onclick="publish()">Publish results (commissioner)</button>
           <button class="btn" onclick="clearPreview()">Clear</button>
         </div>
         <div class="msg" id="entryMsg"></div>
         <div class="govern">
-          Preview locks the order in <b>your</b> browser and creates a shareable link. To make it
-          <b>official for the whole league</b>, the result must be <b>published</b> (a deliberate,
-          traceable step) — send the result code below to publish. Corrections follow the same
-          governance: re‑enter and re‑publish.
+          <b>Preview</b> shows the order on your device only. <b>Publish</b> makes it official for the
+          whole league (locks it everywhere) — only the <b>commissioner's</b> or your admin PIN can publish.
+          Corrections: re‑enter and publish again.
         </div>
       </div>
     </details>
@@ -159,6 +161,12 @@
     // PUBLISHED lottery result: seeds of the teams that won picks 1..6 (empty = not yet published).
     var LOTTERY_RESULT = [];
 
+    // Official result now comes from the league API (published by the commissioner).
+    var API = 'https://script.google.com/macros/s/AKfycbzmaK3bMou26iCNx_FOfnx-0TcNHOC1t2qjS5qU9gy9ZiAeN0yh9wx1r39Rhiyk7byz/exec';
+    var publishedResult = null;
+    function api(params){ var q=Object.keys(params).map(function(k){return k+'='+encodeURIComponent(params[k]);}).join('&'); return fetch(API+'?'+q).then(function(r){return r.json();}); }
+    function fetchLottery(){ api({action:'state'}).then(function(s){ if(s&&s.lottery&&s.lottery.length===6){ publishedResult=s.lottery; renderAll(); } }).catch(function(){}); }
+
     function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
     function ord(n){ var s=['th','st','nd','rd'], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); }
     var poolBySeed = {}; POOL.forEach(function(t){ poolBySeed[t.seed]=t; });
@@ -179,6 +187,7 @@
     var previewSeeds = null;
     function getResult(){
       if (previewSeeds) return { seeds: previewSeeds, status: 'preview' };
+      if (publishedResult) return { seeds: publishedResult, status: 'published' };
       var u = urlResult(); if (u) return { seeds: u, status: 'preview' };
       if (validSeeds(LOTTERY_RESULT)) return { seeds: LOTTERY_RESULT, status: 'published' };
       return null;
@@ -274,9 +283,20 @@
       var r = readSelects(); var m = document.getElementById('entryMsg');
       if (r.err){ m.innerHTML = '⚠️ '+r.err; return; }
       previewSeeds = r.seeds; renderAll();
-      var code = r.seeds.join(',');
-      m.innerHTML = '✅ Order locked on this device. To publish for everyone, send this code:<br><code>'+code+'</code><br>Or share the link (button above).';
+      m.innerHTML = '✅ Previewing on this device only. Click <b>Publish</b> to make it official for the league.';
       window.scrollTo({top:0, behavior:'smooth'});
+    }
+    function publish(){
+      var r = readSelects(); var m = document.getElementById('entryMsg');
+      if (r.err){ m.innerHTML = '⚠️ '+r.err; return; }
+      var p = (document.getElementById('lotpin').value||'').trim().toUpperCase();
+      if (!p){ m.innerHTML = '⚠️ Enter the commissioner PIN to publish.'; return; }
+      m.innerHTML = 'Publishing…';
+      api({action:'lottery', pin:p, seeds:r.seeds.join(',')}).then(function(res){
+        if (res.ok){ publishedResult = r.seeds; previewSeeds = null; document.getElementById('lotpin').value=''; renderAll();
+          m.innerHTML = '🔒 Published — the lottery order is now official for the whole league.'; window.scrollTo({top:0, behavior:'smooth'}); }
+        else m.innerHTML = '⚠️ ' + (res.error || 'Failed to publish');
+      });
     }
     function copyLink(){
       var r = readSelects(); var m = document.getElementById('entryMsg');
@@ -300,7 +320,7 @@
     }
 
     function renderAll(){ setStatus(); renderOrder(); if (shown) renderBoard(); }
-    buildSelects(); renderAll();
+    buildSelects(); renderAll(); fetchLottery();
   </script>
 </body>
 </html>
