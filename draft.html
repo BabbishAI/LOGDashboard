@@ -107,7 +107,8 @@
         <div class="btns">
           <button class="btn" onclick="preview()">Preview (this device)</button>
           <button class="btn primary" onclick="publish()">Publish results (commissioner)</button>
-          <button class="btn" onclick="clearPreview()">Clear</button>
+          <button class="btn" onclick="clearPreview()">Clear preview</button>
+          <button class="btn" onclick="unpublish()">Unpublish (commissioner)</button>
         </div>
         <div class="msg" id="entryMsg"></div>
         <div class="govern">
@@ -304,6 +305,17 @@
       var link = location.origin + location.pathname + '?lottery=' + r.seeds.join(',');
       if (navigator.clipboard) navigator.clipboard.writeText(link);
       m.innerHTML = 'Shareable preview link (copied):<br><code>'+esc(link)+'</code>';
+    }
+    function unpublish(){
+      var m = document.getElementById('entryMsg');
+      var p = (document.getElementById('lotpin').value||'').trim().toUpperCase();
+      if (!p){ m.innerHTML = '⚠️ Enter the commissioner PIN to unpublish.'; return; }
+      if (!confirm('Clear the published lottery result (back to pending/estimates)?')) return;
+      api({action:'lottery', pin:p, seeds:'clear'}).then(function(res){
+        if (res.ok){ publishedResult = null; previewSeeds = null; document.getElementById('lotpin').value=''; renderAll();
+          m.innerHTML = 'Cleared — lottery is back to pending.'; }
+        else m.innerHTML = '⚠️ ' + (res.error || 'Failed');
+      });
     }
     function clearPreview(){
       previewSeeds = null; for (var p=1;p<=6;p++) document.getElementById('sel'+p).value='';
