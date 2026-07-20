@@ -74,12 +74,13 @@
     <div class="card pinbar">
       <label>Your team PIN (used for everything below)</label>
       <div class="row">
-        <input id="pin" placeholder="6-character PIN" maxlength="20" autocomplete="off">
+        <input id="pin" type="password" placeholder="6-character PIN" maxlength="20" autocomplete="off" autocapitalize="characters">
+        <button type="button" class="btn" id="eye" onclick="togglePin()" title="show/hide PIN" style="max-width:56px">👁</button>
         <details class="mini"><summary>Change my PIN</summary>
           <div style="margin-top:10px">
             <label>New PIN (min 4 chars)</label>
             <div class="row">
-              <input id="newpin" placeholder="new PIN" maxlength="20" style="max-width:200px">
+              <input id="newpin" type="password" placeholder="new PIN" maxlength="20" style="max-width:200px" autocomplete="off">
               <button class="btn" onclick="changePin()">Update PIN</button>
             </div>
             <div class="msg" id="pinMsg"></div>
@@ -113,7 +114,8 @@
       return fetch(API+'?'+q).then(function(r){ return r.json(); });
     }
     function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-    function pin(){ return document.getElementById('pin').value.trim(); }
+    function pin(){ return document.getElementById('pin').value.trim().toUpperCase(); }
+    function togglePin(){ var i=document.getElementById('pin'); i.type = i.type==='password'?'text':'password'; document.getElementById('eye').textContent = i.type==='password'?'👁':'🙈'; }
     function msg(el, text, ok){ var e=document.getElementById(el); e.textContent=text; e.className='msg '+(ok?'ok':'err'); }
 
     function load(){
